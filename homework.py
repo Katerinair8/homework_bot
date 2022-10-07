@@ -1,15 +1,13 @@
 import time
-import logging, sys
+import logging
+import sys
 import os
 import requests
-
-from exceptions import EmptyListException, ListException
-
-from telegram import Bot
-
+from http import HTTPStatus
 from dotenv import load_dotenv
 
-from http import HTTPStatus
+from exceptions import EmptyListException, ListException
+from telegram import Bot
 
 load_dotenv()
 
@@ -46,7 +44,8 @@ def send_message(bot, message):
         bot.send_message(chat_id, message)
         logging.info(f'Удачная отправка сообщения в Telegram')
     except Exception as error:
-        logging.error(f'Неудачная попытка отправить сообщение в Telegram: {error}')
+        logging.error(
+            f'Неудачная попытка отправить сообщение в Telegram: {error}')
         return bot.send_message(chat_id, message)
 
 
@@ -60,7 +59,8 @@ def get_api_answer(current_timestamp):
         else:
             return response.json()
     except Exception as error:
-            logging.error(f'Ошибка при запросе к API: {error}')
+        logging.error(f'Ошибка при запросе к API: {error}')
+
 
 def check_response(response):
     """Проверяет ответ API на корректность"""
@@ -90,9 +90,10 @@ def check_tokens():
     """Проверяет доступность переменных окружения"""
     for token in (PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID):
         if token is None:
-            logging.critical(f'Отсутствует обязательная переменная окружения: {token}')
+            logging.critical(
+                f'Отсутствует обязательная переменная окружения: {token}')
         return False
-    return True   
+    return True
 
 
 def main():
@@ -118,6 +119,7 @@ def main():
             time.sleep(RETRY_TIME)
         else:
             time.sleep(RETRY_TIME)
+
 
 if __name__ == '__main__':
     main()
