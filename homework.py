@@ -37,12 +37,12 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot, message):
-    """Отправляет сообщение в Telegram чат"""
+    """Отправляет сообщение в Telegram чат."""
     try:
         chat_id = TELEGRAM_CHAT_ID
         message = 'Обновился статус домашки!'
         bot.send_message(chat_id, message)
-        logging.info(f'Удачная отправка сообщения в Telegram')
+        logging.info('Удачная отправка сообщения в Telegram')
     except Exception as error:
         logging.error(
             f'Неудачная попытка отправить сообщение в Telegram: {error}')
@@ -50,7 +50,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
-    """Делает запрос к эндпоинту API-сервиса"""
+    """Делает запрос к эндпоинту API-сервиса."""
     params = {'from_date': current_timestamp}
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
@@ -63,7 +63,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """Проверяет ответ API на корректность"""
+    """Проверяет ответ API на корректность."""
     homeworks = response['homeworks']
     if homeworks is None:
         error = ('Отсутствуют ожидаемые ключи в ответе API')
@@ -77,7 +77,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """Извлекает из информации о конкретной домашней работе статус этой работы"""
+    """Извлекает статус конкретной домашки."""
     homework_name = homework['homework_name']
     homework_status = homework['status']
     if homework_status not in HOMEWORK_STATUSES:
@@ -87,7 +87,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """Проверяет доступность переменных окружения"""
+    """Проверяет доступность переменных окружения."""
     for token in (PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID):
         if token is None:
             logging.critical(
@@ -98,7 +98,6 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-
     bot = Bot(token=TELEGRAM_TOKEN)
     current_timestamp = 0
 
