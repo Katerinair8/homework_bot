@@ -6,7 +6,7 @@ import requests
 from http import HTTPStatus
 from dotenv import load_dotenv
 
-from exceptions import EmptyListException, ListException
+from exceptions import EmptyListException, ListException, AnswerException
 from telegram import Bot
 
 load_dotenv()
@@ -55,7 +55,7 @@ def get_api_answer(current_timestamp):
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
         if response.status_code != HTTPStatus.OK:
-            raise Exception('Не получилось сделать запрос к API')
+            raise AnswerException('Не получилось сделать запрос к API')
         else:
             return response.json()
     except Exception as error:
@@ -92,7 +92,7 @@ def check_tokens():
         if token is None:
             logging.critical(
                 f'Отсутствует обязательная переменная окружения: {token}')
-        return False
+            return False
     return True
 
 
