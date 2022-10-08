@@ -52,14 +52,12 @@ def send_message(bot, message):
 def get_api_answer(current_timestamp):
     """Делает запрос к эндпоинту API-сервиса."""
     params = {'from_date': current_timestamp}
-    try:
-        response = requests.get(ENDPOINT, headers=HEADERS, params=params)
-        if response.status_code != HTTPStatus.OK:
-            raise AnswerException('Не получилось сделать запрос к API')
-        else:
-            return response.json()
-    except Exception as error:
-        logging.error(f'Ошибка при запросе к API: {error}')
+    response = requests.get(ENDPOINT, headers=HEADERS, params=params)
+    if response.status_code != HTTPStatus.OK:
+        logging.error('Ошибка при запросе к API')
+        raise AnswerException('Не получилось сделать запрос к API')
+    else:
+        return response.json()
 
 
 def check_response(response):
@@ -73,7 +71,7 @@ def check_response(response):
         raise ListException
     else:
         logging.info(response['homeworks'])
-        return response['homeworks']
+        return homeworks
 
 
 def parse_status(homework):

@@ -1,3 +1,6 @@
+from sqlite3 import InternalError
+
+
 class ListException(Exception):
     pass
 
