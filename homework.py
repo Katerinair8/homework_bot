@@ -66,7 +66,8 @@ def get_api_answer(current_timestamp: int) -> dict:
             logging.debug(params)
         if response.status_code != HTTPStatus.OK:
             raise AnswerException(
-                f'Ошибка при запросе к Api. Статус ответа: {response.status_code}'
+                f"Ошибка при запросе к Api.\
+                Статус ответа: {response.status_code}"
             )
     except Exception as error:
         raise Exception(f"Ошибка работы программы: {error}")
@@ -117,8 +118,10 @@ def main():
 
     while True:
         try:
-            if check_tokens() == False:
-                sys.exit(message="Отсутствует обязательная переменная окружения")
+            if not check_tokens():
+                sys.exit(
+                    message="Отсутствует обязательная переменная окружения"
+                )
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
             if len(homeworks) == 0:
