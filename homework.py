@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from exceptions import (
     NotSendingError, EmptyListException, ListException,
     AnswerException, SendMessageException)
-from telegram import Bot
+from telegram import Bot, error
 
 load_dotenv()
 
@@ -45,7 +45,7 @@ def send_message(bot, message: str) -> None:
     try:
         chat_id = TELEGRAM_CHAT_ID
         bot.send_message(chat_id, message)
-    except telegram.error.TelegramError:
+    except error.TelegramError:
         raise SendMessageException("Ошибка отправки соощения в Telegram")
     else:
         logging.info('Удачная отправка сообщения в Telegram')
