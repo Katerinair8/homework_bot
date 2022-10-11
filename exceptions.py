@@ -1,11 +1,19 @@
-from sqlite3 import InternalError
+class NotSendingError(Exception):
 
+    def __init__(self, message: str) -> None:
+        self.message = message
 
-class ListException(Exception):
+class ListException(NotSendingError):
     pass
 
-class EmptyListException(Exception):
+class SendMessageException(NotSendingError):
     pass
 
 class AnswerException(Exception):
+    pass
+
+class CheckTokensException(Exception):
+    pass
+
+class EmptyListException(Exception):
     pass
