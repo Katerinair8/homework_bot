@@ -2,7 +2,6 @@ import time
 import logging
 import sys
 import os
-from typing import Iterable
 import requests
 from http import HTTPStatus
 from dotenv import load_dotenv
