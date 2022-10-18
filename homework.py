@@ -41,12 +41,17 @@ HOMEWORK_STATUSES = {
 def send_message(bot, message: str) -> None:
     """Отправляет сообщение в Telegram чат."""
     logging.debug("Начали отправку сообщения")
-    try:
-        bot.send_message(TELEGRAM_CHAT_ID, message)
-    except error.TelegramError:
-        raise SendMessageException("Ошибка отправки соощения в Telegram")
+    old_message = ""
+    if message != old_message:
+        try:
+            bot.send_message(TELEGRAM_CHAT_ID, message)
+            old_message = message
+        except error.TelegramError:
+            raise SendMessageException("Ошибка отправки соощения в Telegram")
+        else:
+            logging.info('Удачная отправка сообщения в Telegram')
     else:
-        logging.info('Удачная отправка сообщения в Telegram')
+        logging.debug(message)
 
 
 def get_api_answer(current_timestamp: int) -> dict:
@@ -57,8 +62,9 @@ def get_api_answer(current_timestamp: int) -> dict:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
         if response.status_code != HTTPStatus.OK:
             raise AnswerException(
-                f"Ошибка при запросе к Api."
-                f"Статус ответа: {response.status_code}"
+                f"""Статус ответа: {response.status_code} - {response.reason}.
+                Текст ответа: {response.text}. Эндпоинты: {ENDPOINT}.
+                Заголовки ответа: {HEADERS}. Параметры ответа: {params}"""
             )
     except Exception as error:
         raise Exception(f"Ошибка работы программы: {error}")
@@ -69,18 +75,18 @@ def get_api_answer(current_timestamp: int) -> dict:
 def check_response(response: dict) -> list:
     """Проверяет ответ API на корректность."""
     logging.debug("Начали проверку ответа сервера")
-    homeworks = response["homeworks"]
+    homework = dict(response).get("homeworks")
     if not isinstance(response, dict):
         raise TypeError("В функцию check_response был передан не словарь")
-    elif homeworks is None:
+    elif homework is None:
         raise EmptyListException('Отсутствуют ожидаемые ключи в ответе API')
-    elif response.get("current_date") is None:
+    elif "current_date" not in response:
         raise ListException("Отсутствует ключ 'current_date' в словаре")
-    elif not isinstance(homeworks, list):
+    elif not isinstance(homework, list):
         raise KeyError(
-            f"Параметр 'howerworks' - не список. Тип: {type(homeworks)}")
+            f"Параметр 'howerworks' - не список. Тип: {type(homework)}")
     else:
-        return homeworks
+        return homework
 
 
 def parse_status(homework: dict) -> str:
@@ -105,7 +111,7 @@ def main():
 
     if not check_tokens():
         sys.exit(
-            message="Отсутствует обязательная переменная окружения"
+            logging.critical("Отсутствует обязательная переменная окружения")
         )
     while True:
         try:
@@ -114,13 +120,7 @@ def main():
             if not homeworks:
                 message = "Сервер вернул пустой список"
             else:
-                old_message = ""
                 message = parse_status(homeworks[0])
-                if message != old_message:
-                    old_message = message
-                else:
-                    message = "Статус проверки работы не изменился"
-                    logging.debug(message)
             send_message(bot, message)
             current_timestamp = response.get(
                 "current_date",
@@ -128,19 +128,6 @@ def main():
             )
         except NotSendingError as error:
             logging.error(error, exc_info=error)
-        except AnswerException:
-            logging.debug(
-                response.status_code,
-                response.reason,
-                response.reason,
-                response.text,
-                ENDPOINT,
-                HEADERS,
-                response.params
-            )
-        except SystemExit as error:
-            logging.critical(error, exc_info=error)
-            send_message(bot, error)
         except Exception as error:
             logging.error(error, exc_info=error)
             send_message(bot, error)
