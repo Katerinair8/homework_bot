@@ -26,7 +26,7 @@ logging.basicConfig(
     ],
     format='%(asctime)s, %(name)s, %(levelname)s, %(message)s')
 
-RETRY_TIME = 600
+RETRY_TIME = 60
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
@@ -40,24 +40,19 @@ HOMEWORK_STATUSES = {
 
 def send_message(bot, message: str) -> None:
     """Отправляет сообщение в Telegram чат."""
-    logging.debug("Начали отправку сообщения")
-    old_message = ""
-    if message != old_message:
-        try:
-            bot.send_message(TELEGRAM_CHAT_ID, message)
-            old_message = message
-        except error.TelegramError:
-            raise SendMessageException("Ошибка отправки соощения в Telegram")
-        else:
-            logging.info('Удачная отправка сообщения в Telegram')
+    logging.debug('Начали отправку сообщения')
+    try:
+        bot.send_message(TELEGRAM_CHAT_ID, message)
+    except error.TelegramError:
+        raise SendMessageException('Ошибка отправки соощения в Telegram')
     else:
-        logging.debug(message)
+        logging.info('Удачная отправка сообщения в Telegram')
 
 
 def get_api_answer(current_timestamp: int) -> dict:
     """Делает запрос к эндпоинту API-сервиса."""
     params = {'from_date': current_timestamp}
-    logging.info("Направляем запрос к API")
+    logging.info('Направляем запрос к API')
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
         if response.status_code != HTTPStatus.OK:
@@ -67,26 +62,26 @@ def get_api_answer(current_timestamp: int) -> dict:
                 Заголовки ответа: {HEADERS}. Параметры ответа: {params}"""
             )
     except Exception as error:
-        raise Exception(f"Ошибка работы программы: {error}")
+        raise Exception(f'Ошибка работы программы: {error}')
     else:
         return response.json()
 
 
 def check_response(response: dict) -> list:
     """Проверяет ответ API на корректность."""
-    logging.debug("Начали проверку ответа сервера")
-    homework = dict(response).get("homeworks")
+    logging.debug('Начали проверку ответа сервера')
     if not isinstance(response, dict):
-        raise TypeError("В функцию check_response был передан не словарь")
-    elif homework is None:
+        raise TypeError('В функцию check_response был передан не словарь')
+    
+    homework = response.get('homeworks')
+    if homework is None:
         raise EmptyListException('Отсутствуют ожидаемые ключи в ответе API')
     elif "current_date" not in response:
-        raise ListException("Отсутствует ключ 'current_date' в словаре")
+        raise ListException('Отсутствует ключ "current_date" в словаре')
     elif not isinstance(homework, list):
         raise KeyError(
-            f"Параметр 'howerworks' - не список. Тип: {type(homework)}")
-    else:
-        return homework
+            f'Параметр "howerworks" - не список. Тип: {type(homework)}')
+    return homework
 
 
 def parse_status(homework: dict) -> str:
@@ -108,24 +103,29 @@ def main():
     """Основная логика работы бота."""
     bot = Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
+    old_message = ''
+
 
     if not check_tokens():
-        sys.exit(
-            logging.critical("Отсутствует обязательная переменная окружения")
-        )
+        logging.critical('Отсутствует обязательная переменная окружения')
+        sys.exit('Отсутствует обязательная переменная окружения')
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
             if not homeworks:
-                message = "Сервер вернул пустой список"
+                message = 'Сервер вернул пустой список'
             else:
                 message = parse_status(homeworks[0])
-            send_message(bot, message)
             current_timestamp = response.get(
-                "current_date",
+                'current_date',
                 current_timestamp
             )
+            if message != old_message:
+                old_message = message
+                send_message(bot, message)
+            else:
+                logging.debug('В ответе отсутсвует новый статус')
         except NotSendingError as error:
             logging.error(error, exc_info=error)
         except Exception as error:

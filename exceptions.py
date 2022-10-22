@@ -10,8 +10,5 @@ class SendMessageException(NotSendingError):
 class AnswerException(Exception):
     pass
 
-class CheckTokensException(Exception):
-    pass
-
 class EmptyListException(Exception):
     pass
