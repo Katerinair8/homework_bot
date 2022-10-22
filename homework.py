@@ -72,7 +72,7 @@ def check_response(response: dict) -> list:
     logging.debug('Начали проверку ответа сервера')
     if not isinstance(response, dict):
         raise TypeError('В функцию check_response был передан не словарь')
-    
+
     homework = response.get('homeworks')
     if homework is None:
         raise EmptyListException('Отсутствуют ожидаемые ключи в ответе API')
@@ -104,7 +104,6 @@ def main():
     bot = Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     old_message = ''
-
 
     if not check_tokens():
         logging.critical('Отсутствует обязательная переменная окружения')
